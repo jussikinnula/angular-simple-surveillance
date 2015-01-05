@@ -6,22 +6,22 @@ var app = angular.module('surveillance', [
 ]);
 
 app.controller('MainCtrl', function($scope, $resource) {
-    $scope.page = 1;
-    $scope.pager = null;
+    $scope.currentPage = 1;
+    $scope.itemsPerPage = 8;
 
     var Cameras = $resource('rest/camera/:camera');
     var Dates = $resource('rest/camera/:camera/date');
-    var Pictures = $resource('rest/camera/:camera/date/:date/pictures');
+    var Items = $resource('rest/camera/:camera/date/:date');
+    var Images = $resource('rest/camera/:camera/date/:date/images');
     var Videos = $resource('rest/camera/:camera/date/:date/videos');
-    var Items = $resource('rest/camera/:camera/date/:date/page/:page');
 
     Cameras.get().$promise.then(function(success) {
         $scope.cameras = success.cameras;
     });
 
-    var fetchdates = function(camera) {
+    var fetchDates = function() {
         Dates.get({
-            "camera": camera
+            "camera": $scope.selectedCamera
         }).$promise.then(function(success) {
             $scope.dates = success.dates;
         });
@@ -32,34 +32,42 @@ app.controller('MainCtrl', function($scope, $resource) {
         }
     };
 
-    var fetchdata = function(date, page) {
-        $scope.items = [];
+    var pageChanged = function() {
+        if ($scope.allItems) {
+            var begin = (($scope.currentPage - 1) * $scope.itemsPerPage),
+                end = begin + $scope.itemsPerPage;
+            $scope.items = $scope.allItems.slice(begin, end);
+            console.log($scope.items);
+        }
+    };
+
+    var fetchItems = function() {
         Items.get({
-            "camera": $scope.camera,
-            "date": date,
-            "page": page,
+            "camera": $scope.selectedCamera,
+            "date": $scope.selectedDate
         }).$promise.then(function(success) {
-            $scope.items = success.items;
-            $scope.pager = success.pager;
+            $scope.allItems = success.items;
+            $scope.totalItems = $scope.allItems.length;
+            $scope.currentPage = 1;
+            pageChanged();
         });
     };
 
-    $scope.$watch('camera', function(newvalue, oldvalue) {
+    $scope.$watch('selectedCamera', function(newvalue, oldvalue) {
         if (newvalue) {
-            fetchdates(newvalue);
+            fetchDates();
          }
     });
 
-    $scope.$watch('selected', function(newvalue, oldvalue) {
+    $scope.$watch('selectedDate', function(newvalue, oldvalue) {
         if (newvalue) {
-            $scope.page = 1;
-            fetchdata(newvalue, $scope.page);
+            fetchItems();
          }
     });
 
-    $scope.$watch('pager.current_page',function(page, old) {
-        if (old && (page != old)) {
-            fetchdata($scope.selected, page);
+    $scope.$watch('currentPage', function(newvalue, oldvalue) {
+        if (newvalue) {
+            pageChanged();
         }
     });
 
