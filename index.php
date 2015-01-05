@@ -146,7 +146,7 @@ if (strlen($_GET["url"]) > 0) {
                     }
                 }
                 closedir($dh);
-                $dir = $params[2]."/Kuvat";
+                $dir = $params[2].$image_subdirectory;
                 $dh  = opendir($dir);
                 $files = array();
                 while (false !== ($filename = readdir($dh))) {
@@ -179,8 +179,8 @@ if (strlen($_GET["url"]) > 0) {
                 $output["videos"] = $files;
             } else if ($params[5] == "videos") {
                 $output["error"] = "Videos not found";
-            } else if ($params[3] == "date" and $params[4] and $params[5] == "pictures" and file_exists($params[2]."/Kuvat")) {
-                $dir = $params[2]."/Kuvat";
+            } else if ($params[3] == "date" and $params[4] and $params[5] == "pictures" and file_exists($params[2].$image_subdirectory)) {
+                $dir = $params[2].$image_subdirectory;
                 $dh  = opendir($dir);
                 $files = array();
                 while (false !== ($filename = readdir($dh))) {
@@ -197,7 +197,7 @@ if (strlen($_GET["url"]) > 0) {
                 $output["pictures"] = $files;
             } else if ($params[5] == "pictures") {
                 $output["error"] = "Pictures not found";
-            } else if ($params[3] == "date" and $params[4] and $params[5] == "page" and $params[6] > 0 and file_exists($params[2].$video_subdirectory) and file_exists($params[2]."/Kuvat")) {
+            } else if ($params[3] == "date" and $params[4] and $params[5] == "page" and $params[6] > 0 and file_exists($params[2].$video_subdirectory) and file_exists($params[2].$image_subdirectory)) {
                 $files = array();
 
                 $dir = $params[2].$video_subdirectory;
@@ -215,7 +215,7 @@ if (strlen($_GET["url"]) > 0) {
                 }
                 closedir($dh);
 
-                $dir = $params[2]."/Kuvat";
+                $dir = $params[2].$image_subdirectory;
                 $dh  = opendir($dir);
                 while (false !== ($filename = readdir($dh))) {
                     $date = date("Y-m-d", filemtime($dir."/".$filename));
