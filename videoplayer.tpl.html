@@ -1,0 +1,6 @@
+<div ng-hide="player">
+	<img src="play.png" ng-click="enablePlayer()">
+</div>
+<div ng-if="player">
+	<video ng-src="{{ video.file }}" type='video/x-matroska; codecs="theora, vorbis"' controls onerror="failed(event)"></video>
+</div>
