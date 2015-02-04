@@ -155,11 +155,11 @@ if (strlen($_GET["url"]) > 0) {
         if ($params[1] == "camera" and $params[2] and file_exists($media_storage . "/" . $params[2])) {
             if ($params[3] == "date" and !$params[4]) {
                 $dates = array();
-                for ($i = 0; $i < 10; $i++) {
-                    $time = time() - ($i * 24 * 60 * 60);
+                $sql = "SELECT DISTINCT SUBSTRING(created, 1, 10) AS date FROM items WHERE camera='" . $params[2] . "' ORDER BY date DESC";
+                foreach($db->query($sql) as $row) {
                     $object = new stdClass();
-                    $object->label = date("d.m.Y", $time);
-                    $object->value = date("Y-m-d", $time);
+                    $object->label = substr($row['date'], 8, 2) . "." . substr($row['date'], 5, 2) . "." . substr($row['date'], 0, 4);
+                    $object->value = $row['date'];
                     $dates[] = $object;
                 }
                 $output["dates"] = $dates;
