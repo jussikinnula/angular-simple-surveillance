@@ -40,7 +40,7 @@ function spa_index() {
                             <div class="form-group">
                                 <label class="col-sm-6 control-label" for="camera">Kamera:</label>
                                 <div class="col-sm-4">
-                                    <select class="form-control" ng-model="selectedCamera" ng-options="camera as camera for camera in cameras" id="camera">
+                                    <select class="form-control" ng-model="selectedCamera" ng-options="camera.id as camera.name for camera in cameras" id="camera">
                                         <option value=""></option>
                                     </select>
                                 </div>
@@ -76,7 +76,11 @@ function spa_index() {
         </nav>
 
         <div class="container-fluid">
-            <div ng-show="selectedDate">
+            <div ng-show="items.length == 0">
+                <h1>Ei tuloksia</h1>
+                <p>Valitsemallesi kameralle ja päivämäärälle ei löytynyt yhtään osumaa.</p>
+            </div>
+            <div ng-show="items.length > 0">
                 <h1>{{ camera }}</h1>
                 <pagination
                     ng-model="currentPage"
@@ -137,114 +141,43 @@ function json_out($data) {
 
 function reverse_time_sort($a, $b) {
     return $a->time < $b->time;
-}  
+}
+
+$pdo_vars = "mysql:host=" . $mysql_host . ";port=" . $mysql_port . ";dbname=" . $mysql_database . ";charset=utf8";
+if (!$db = new PDO($pdo_vars, $mysql_user, $mysql_pass)) {
+    die("Could not connect to DB...");
+}
 
 if (strlen($_GET["url"]) > 0) {
     $params = explode('/', $_GET["url"]);
     if ($params[0] == "rest") {
         $output = array();
-        if ($params[1] == "camera" and $params[2] and file_exists($params[2])) {
+        if ($params[1] == "camera" and $params[2] and file_exists($media_storage . "/" . $params[2])) {
             if ($params[3] == "date" and !$params[4]) {
-                $dates_check = array();
                 $dates = array();
-                $dir = $params[2].$video_subdirectory;
-                $dh  = opendir($dir);
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($dates_check[$date] != 1) {
-                        $dates_check[$date] = 1;
-                        $object = new stdClass();
-                        $object->label = date("d.m.Y", filemtime($dir."/".$filename));
-                        $object->value = $date;
-                        $dates[] = $object;
-                    }
+                for ($i = 0; $i < 10; $i++) {
+                    $time = time() - ($i * 24 * 60 * 60);
+                    $object = new stdClass();
+                    $object->label = date("d.m.Y", $time);
+                    $object->value = date("Y-m-d", $time);
+                    $dates[] = $object;
                 }
-                closedir($dh);
-                $dir = $params[2].$image_subdirectory;
-                $dh  = opendir($dir);
-                $files = array();
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($dates_check[$date] != 1) {
-                        $dates_check[$date] = 1;
-                        $object = new stdClass();
-                        $object->label = date("d.m.Y", filemtime($dir."/".$filename));
-                        $object->value = $date;
-                        $dates[] = $object;
-                    }
-                }
-                closedir($dh);
                 $output["dates"] = $dates;
-            } else if ($params[3] == "date" and $params[4] and $params[5] == "videos" and file_exists($params[2].$video_subdirectory)) {
-                $dir = $params[2].$video_subdirectory;
-                $dh  = opendir($dir);
+            } else if ($params[3] == "date" and $params[4]) {
                 $files = array();
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($date == $params[4] and $filename != '.' and $filename != '..') {
-                        $object = new stdClass();
-                        $object->time = filemtime($dir."/".$filename) * 1000;
-                        $object->file = $base_url.$dir."/".$filename;
-                        $object->size = filesize($dir."/".$filename);
-                        $files[] = $object;
-                    }
-                }
-                closedir($dh);
-                $output["videos"] = $files;
-            } else if ($params[5] == "videos") {
-                $output["error"] = "Videos not found";
-            } else if ($params[3] == "date" and $params[4] and $params[5] == "images" and file_exists($params[2].$image_subdirectory)) {
-                $dir = $params[2].$image_subdirectory;
-                $dh  = opendir($dir);
-                $files = array();
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($date == $params[4] and $filename != '.' and $filename != '..') {
-                        $object = new stdClass();
-                        $object->time = filemtime($dir."/".$filename) * 1000;
-                        $object->file = $base_url.$dir."/".$filename;
-                        $object->size = filesize($dir."/".$filename);
-                        $files[] = $object;
-                    }
-                }
-                closedir($dh);
-                $output["images"] = $files;
-            } else if ($params[5] == "images") {
-                $output["error"] = "Images not found";
-            } else if ($params[3] == "date" and $params[4] and file_exists($params[2].$video_subdirectory) and file_exists($params[2].$image_subdirectory)) {
-                $files = array();
-
-                $dir = $params[2].$video_subdirectory;
-                $dh  = opendir($dir);
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($date == $params[4] and $filename != '.' and $filename != '..') {
-                        $object = new stdClass();
-                        $object->time = filemtime($dir."/".$filename) * 1000;
-                        $object->file = $base_url.$dir."/".$filename;
-                        $object->size = filesize($dir."/".$filename);
+                $sql = "SELECT * FROM items WHERE camera='" . $params[2] . "' AND created >= '" . $params[4] . " 00:00:00' AND created <= '" . $params[4] . " 23:59:59' ORDER BY created DESC";
+                foreach($db->query($sql) as $row) {
+                    $object = new stdClass();
+                    $object->time = $row['created'];
+                    $object->file = $site_path . $row['file'];
+                    $object->size = $row['size'];
+                    if (substr($row['file'], -3) === 'mkv') {
                         $object->type = 'video';
-                        $files[] = $object;
-                    }
-                }
-                closedir($dh);
-
-                $dir = $params[2].$image_subdirectory;
-                $dh  = opendir($dir);
-                while (false !== ($filename = readdir($dh))) {
-                    $date = date("Y-m-d", filemtime($dir."/".$filename));
-                    if ($date == $params[4] and $filename != '.' and $filename != '..') {
-                        $object = new stdClass();
-                        $object->time = filemtime($dir."/".$filename) * 1000;
-                        $object->file = $base_url.$dir."/".$filename;
-                        $object->size = filesize($dir."/".$filename);
+                    } else {
                         $object->type = 'image';
-                        $files[] = $object;
                     }
+                    $files[] = $object;
                 }
-                closedir($dh);
-
-                usort($files, 'reverse_time_sort');
                 $output["items"] = $files;
             } else {
                 $output["success"] = "OK";

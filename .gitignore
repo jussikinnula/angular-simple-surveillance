@@ -1,1 +1,5 @@
 .htpasswd
+config.database.php
+config.camera.php
+config.site.php
+media

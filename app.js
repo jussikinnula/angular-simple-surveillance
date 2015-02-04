@@ -37,25 +37,30 @@ app.controller('MainCtrl', function($scope, $resource) {
             var begin = (($scope.currentPage - 1) * $scope.itemsPerPage),
                 end = begin + $scope.itemsPerPage;
             $scope.items = $scope.allItems.slice(begin, end);
-            console.log($scope.items);
         }
     };
 
     var fetchItems = function() {
-        Items.get({
-            "camera": $scope.selectedCamera,
-            "date": $scope.selectedDate
-        }).$promise.then(function(success) {
-            $scope.allItems = success.items;
-            $scope.totalItems = $scope.allItems.length;
-            $scope.currentPage = 1;
-            pageChanged();
-        });
+        $scope.allItems = null;
+        $scope.items = null;
+        if ($scope.selectedCamera && $scope.selectedDate) {
+            Items.get({
+                "camera": $scope.selectedCamera,
+                "date": $scope.selectedDate
+            }).$promise.then(function(success) {
+                $scope.allItems = success.items;
+                $scope.totalItems = $scope.allItems.length;
+                $scope.currentPage = 1;
+                pageChanged();
+            });
+        } else if ($scope.selectedCamera) {
+            fetchDates();
+        }
     };
 
     $scope.$watch('selectedCamera', function(newvalue, oldvalue) {
         if (newvalue) {
-            fetchDates();
+            fetchItems();
          }
     });
 
