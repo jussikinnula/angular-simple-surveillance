@@ -3,3 +3,4 @@ config.database.php
 config.camera.php
 config.site.php
 media
+htaccess_heidi
