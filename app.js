@@ -20,11 +20,15 @@ app.controller('MainCtrl', function($scope, $resource) {
     });
 
     var fetchDates = function() {
-        Dates.get({
-            "camera": $scope.selectedCamera
-        }).$promise.then(function(success) {
-            $scope.dates = success.dates;
-        });
+        if ($scope.selectedCamera) {
+            Dates.get({
+                "camera": $scope.selectedCamera
+            }).$promise.then(function(success) {
+                $scope.dates = success.dates;
+            });
+        } else {
+            $scope.dates = null;
+        }
         if ($scope.selected) {
             fetchdata($scope.selected, $scope.page);
         } else {
@@ -53,21 +57,16 @@ app.controller('MainCtrl', function($scope, $resource) {
                 $scope.currentPage = 1;
                 pageChanged();
             });
-        } else if ($scope.selectedCamera) {
-            fetchDates();
         }
     };
 
     $scope.$watch('selectedCamera', function(newvalue, oldvalue) {
-        if (newvalue) {
-            fetchItems();
-         }
+        fetchDates();
+        fetchItems();
     });
 
     $scope.$watch('selectedDate', function(newvalue, oldvalue) {
-        if (newvalue) {
-            fetchItems();
-         }
+        fetchItems();
     });
 
     $scope.$watch('currentPage', function(newvalue, oldvalue) {
