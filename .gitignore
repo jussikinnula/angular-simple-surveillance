@@ -1,4 +1,5 @@
 .htpasswd
+htaccess_heidi
 config.database.php
 config.camera.php
 config.site.php

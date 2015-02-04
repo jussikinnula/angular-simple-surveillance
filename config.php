@@ -1,8 +1,5 @@
 <?php
 
-date_default_timezone_set("Europe/Helsinki"); // this is needed for getting the correct daily items
-error_reporting(0);
-
 /*
  * Database configuration:
  * =======================

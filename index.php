@@ -1,9 +1,3 @@
-<?php
-
-include("config.php");
-
-function spa_index() {
-?>
 <!DOCTYPE html>
 <html ng-app="surveillance">
     <head>
@@ -128,71 +122,4 @@ function spa_index() {
             </div>
         </div>
     </body>
-
 </html>
-<?php
-}
-
-function json_out($data) {
-    header("Content-Type: application/json");
-    header("Access-Control-Allow-Origin: *");
-    echo json_encode($data);
-}
-
-function reverse_time_sort($a, $b) {
-    return $a->time < $b->time;
-}
-
-$pdo_vars = "mysql:host=" . $mysql_host . ";port=" . $mysql_port . ";dbname=" . $mysql_database . ";charset=utf8";
-if (!$db = new PDO($pdo_vars, $mysql_user, $mysql_pass)) {
-    die("Could not connect to DB...");
-}
-
-if (strlen($_GET["url"]) > 0) {
-    $params = explode('/', $_GET["url"]);
-    if ($params[0] == "rest") {
-        $output = array();
-        if ($params[1] == "camera" and $params[2] and file_exists($media_storage . "/" . $params[2])) {
-            if ($params[3] == "date" and !$params[4]) {
-                $dates = array();
-                for ($i = 0; $i < 10; $i++) {
-                    $time = time() - ($i * 24 * 60 * 60);
-                    $object = new stdClass();
-                    $object->label = date("d.m.Y", $time);
-                    $object->value = date("Y-m-d", $time);
-                    $dates[] = $object;
-                }
-                $output["dates"] = $dates;
-            } else if ($params[3] == "date" and $params[4]) {
-                $files = array();
-                $sql = "SELECT * FROM items WHERE camera='" . $params[2] . "' AND created >= '" . $params[4] . " 00:00:00' AND created <= '" . $params[4] . " 23:59:59' ORDER BY created DESC";
-                foreach($db->query($sql) as $row) {
-                    $object = new stdClass();
-                    $object->time = $row['created'];
-                    $object->file = $site_path . $row['file'];
-                    $object->size = $row['size'];
-                    if (substr($row['file'], -3) === 'mkv') {
-                        $object->type = 'video';
-                    } else {
-                        $object->type = 'image';
-                    }
-                    $files[] = $object;
-                }
-                $output["items"] = $files;
-            } else {
-                $output["success"] = "OK";
-            }
-        } else if ($params[1] == "camera") {
-            $output["cameras"] = $cameras;
-        } else {
-            $output["error"] = "Camera not found";
-        }
-        json_out($output);
-    } else {
-        spa_index();
-    }
-} else {
-    spa_index();
-}
-
-?>
