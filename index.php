@@ -168,7 +168,7 @@ if (strlen($_GET["url"]) > 0) {
                 $sql = "SELECT * FROM items WHERE camera='" . $params[2] . "' AND created >= '" . $params[4] . " 00:00:00' AND created <= '" . $params[4] . " 23:59:59' ORDER BY created DESC";
                 foreach($db->query($sql) as $row) {
                     $object = new stdClass();
-                    $object->time = $row['created'];
+                    $object->time = substr($row['created'], 0, 10) . "T" . substr($row['created'], 11, 8);
                     $object->file = $site_path . $row['file'];
                     $object->size = $row['size'];
                     if (substr($row['file'], -3) === 'mkv') {
