@@ -148,8 +148,9 @@ if (!$db = new PDO($pdo_vars, $mysql_user, $mysql_pass)) {
     die("Could not connect to DB...");
 }
 
-if (strlen($_GET["url"]) > 0) {
-    $params = explode('/', $_GET["url"]);
+$url = substr($_SERVER['REQUEST_URI'], strlen($site_path));
+if (strlen($url) > 0) {
+    $params = explode('/', $url);
     if ($params[0] == "rest") {
         $output = array();
         if ($params[1] == "camera" and $params[2] and file_exists($media_storage . "/" . $params[2])) {
