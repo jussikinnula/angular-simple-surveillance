@@ -170,7 +170,7 @@ if (strlen($url) > 0) {
                 foreach($db->query($sql) as $row) {
                     $object = new stdClass();
                     $object->time = substr($row['created'], 0, 10) . "T" . substr($row['created'], 11, 8);
-                    $object->file = $site_path . "storage" . substr($row['file'], strlen($media_storage));
+                    $object->file = $site_path . "media" . substr($row['file'], strlen($media_storage));
                     $object->size = $row['size'];
                     if (substr($row['file'], -3) === 'mkv') {
                         $object->type = 'video';
