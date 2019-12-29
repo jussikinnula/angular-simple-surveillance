@@ -83,7 +83,7 @@ foreach ($camera_paths as $item) {
 	    	if (!unlink($source)) {
 	    		die("Could not unlink...");
 	    	}
-	    	$sql = "INSERT INTO items VALUES('', '" . $datetime . "', '" . $item->camera . "', '" . $target . "', '" . $size . "' )";
+	    	$sql = "INSERT INTO items (created, camera, file, size) VALUES(NOW(), '" . $item->camera . "', '" . $target . "', '" . $size . "' )";
 			if (!$db->exec($sql)) {
 				die("Could not insert...");
 			}
