@@ -54,11 +54,12 @@ function get_media_path($id, $time) {
 }
 
 $processed = 0;
+$process_max_images = $process_uploaded_images_limit ? $process_uploaded_images_limit : 0;
 foreach ($camera_paths as $item) {
     $dh = opendir($item->path);
     while (false !== ($filename = readdir($dh))) {
     	if ($filename !== '.' and $filename !== '..') {
-    		if ($processed === 1000) {
+    		if ($process_max_images > 0 and $processed === $process_max_images) {
 				echo "[DONE] Processed " . $processed . " media items\n";
 				exit;
     		}
