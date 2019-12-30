@@ -54,16 +54,21 @@ function get_media_path($id, $time) {
 }
 
 $processed = 0;
-$process_max_images = $process_uploaded_images_limit ? $process_uploaded_images_limit : 0;
+$process_max_images = isset($process_uploaded_images_limit) ? $process_uploaded_images_limit : 1000;
+$process_max_time = isset($process_uploaded_images_time_limit) ? $process_uploaded_images_time_limit : 50;
+$time_processing_started = time();
 foreach ($camera_paths as $item) {
     $dh = opendir($item->path);
     while (false !== ($filename = readdir($dh))) {
     	if ($filename !== '.' and $filename !== '..') {
-    		if ($process_max_images > 0 and $processed === $process_max_images) {
-				echo "[DONE] Processed " . $processed . " media items\n";
-				exit;
+               $max_amount_images_processed = ($process_max_images > 0 and $processed === $process_max_images);
+               $processing_time_exceeded = time() > ($time_processing_started + $process_max_time);
+               if ($max_amount_images_processed or $processing_time_exceeded) {
+			echo "[DONE] Processed " . $processed . " media items\n";
+			exit;
     		}
-    		$source = $item->path . "/" . $filename;
+
+		$source = $item->path . "/" . $filename;
     		$time = filemtime($source);
     		$size = filesize($source);
 	        $datetime = date("Y-m-d H:i:s", $time);
