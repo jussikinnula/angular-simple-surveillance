@@ -27,6 +27,7 @@ require_once("config.database.php");
  * $media_storage = "/path/to/storage"; // real file system path where images are located
  *                                      // Note! Make symlink to this path in webroot as "media"
  * $process_uploaded_images_limit = 1000; // default is 1000, 0 to process indefinitely
+ * $process_uploaded_images_time_limit = 50; // processing time limit for uploads.php (default 50 seconds)
  *
  * $cameras[] = (object) array( "id" => "1", "name" => "Etupuoli" );
  * $camera_paths[] = (object) array( "path" => "/path/to/camera1/videos", "camera" => "1" );
